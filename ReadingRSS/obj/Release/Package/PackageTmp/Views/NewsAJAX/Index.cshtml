@@ -1,0 +1,136 @@
+﻿@{
+    ViewBag.Title = "Новости AJAX";
+}
+
+<h2>Новости AJAX</h2>
+
+<div class="form-group">
+    <div class="form-group">
+        <label>Источник ленты</label>
+        <select id="searchString" name="searchString" class="form-control">
+            <option value="Все">Все</option>
+            <option value="Хабрахабр">Хабрахабр</option>
+            <option value="Интерфакс">Интерфакс</option>
+        </select>
+    </div>
+    
+    <div class="form-check form-check-inline">
+        <input class="form-check-input" type="radio" name="checkRadioOptions" id="check_1" checked>
+        <label class="form-check-label" for="check_1">Сортировать по дате</label>
+    </div>
+    <div class="form-check form-check-inline">
+        <input class="form-check-input" type="radio" name="checkRadioOptions" id="check_2">
+        <label class="form-check-label" for="check_2">Сортировать по источнику</label>
+    </div>
+
+    <input type="submit" value="Поиск" class="btn btn-info"  onclick="Search()"/>
+</div>
+
+<div class="form-group">
+    <input type="submit" value="<<" class="btn btn-warning" onclick="Back()" />
+    <input type="submit" value=">>" class="btn btn-success" onclick="Forward()" />
+</div>
+
+    <table class="table" id="table" name="table">
+        <thead>
+            <tr>
+                <th>
+                    Источник
+                </th>
+                <th>
+                    Название новости
+                </th>
+                <th>
+                    Описание новости
+                </th>
+                <th>
+                    Дата публикации
+                </th>
+            </tr>
+        </thead>
+    </table>
+
+
+    @section Scripts {
+        @Scripts.Render("~/bundles/jqueryval")
+        <script src="~/Scripts/jquery-3.3.1.js"></script>
+        <script src="~/Scripts/jquery-3.3.1.min.js"></script>
+        <script src="~/Scripts/jquery.validate.js"></script>
+
+        <script type="text/javascript">
+            
+            window.onload = function () {
+                date(null, 'default');
+            };            
+
+            var txtsearchString = null;
+            var sort = 'default';
+            var page = 1;            
+
+            console.log(page);
+
+            function Search() {
+                txtsearchString = $("#searchString").val();
+                if ($("#check_1").prop("checked") == true) {
+                    sort = 'date';
+                }
+                else {
+                    sort = 'source';
+                }
+
+                console.log(txtsearchString);
+                console.log(sort);
+                date(txtsearchString, sort);
+            }
+
+            function Forward() {
+                pageList(1);
+            }
+
+            function Back() {
+                pageList(-1);
+            }
+            
+            function pageList(count) {
+                page = page + (count);
+
+                if (page < 1)
+                {
+                    page = 1;
+                }
+
+                console.log(page);
+                date(txtsearchString, sort);
+            }
+
+            function date(source, sort) {
+                $.ajax({
+                    type: "POST",
+                    url: "NewsAJAX/GetAll?source=" + source + "&sort=" + sort + "&page=" + page,
+                    dataType: 'json',
+                    cache: false,
+                    success: function (result) {
+                        console.log(result);
+
+                        $('#table tbody').empty();
+
+                        if (result.length != 0) {
+                            var trHTML = '';
+                            $.each(result, function (i, item) {
+                                trHTML += '<tbody><tr><td>' + item.SourceName + '</td><td>' + item.Title + '</td><td>' + item.Description + '</td><td>' + item.PubDate + '</td></tr></tbody>';
+                            });
+                            $('#table').append(trHTML);
+                        }
+                        else {
+                            pageList(-1);
+                            return;
+                        }
+                    },
+                    error: function ajaxError(result) {
+                        alert(result.status + ' : ' + result.statusText);
+                    }
+                    , timeout: 1000000
+                });
+            };
+        </script>
+    }

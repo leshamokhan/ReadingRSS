@@ -1,0 +1,68 @@
+﻿@model PagedList.IPagedList<ReadingRSS.Models.News>
+@using PagedList.Mvc;
+<link href="~/Content/PagedList.css" rel="stylesheet" type="text/css" />
+
+
+@{
+    ViewBag.Title = "Новости";
+}
+
+<h2>Новости</h2>
+
+
+@using (Html.BeginForm("Index", "News", FormMethod.Get))
+{
+    <p>
+        <div class="form-group mx-sm-3 mb-2">
+            <select id="searchString" name="searchString" class="form-control">
+                <option value="Все">Все</option>
+                <option value="Интерфакс">Интерфакс</option>
+                <option value="Хабрахабр">Хабрахабр</option>
+            </select>
+        </div>
+        <input type="submit" value="Поиск" class="btn btn-info" />
+    </p>
+}
+
+
+<table class="table">
+    <tr>
+        <th>
+            @Html.ActionLink("Источник", "Index", new { sortOrder = ViewBag.SourceParm, currentFilter = ViewBag.CurrentFilter })
+        </th>
+        <th>
+            Название
+        </th>
+        <th>
+            Описание
+        </th>
+        <th>
+            @Html.ActionLink("Дата", "Index", new { sortOrder = ViewBag.DateSortParm, currentFilter = ViewBag.CurrentFilter })
+        </th>
+    </tr>
+
+    @foreach (var item in Model)
+    {
+        <tr>
+            <td>
+                @Html.DisplayFor(modelItem => item.Source.Name)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.Title)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.Description)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.PubDate)
+            </td>
+        </tr>
+    }
+</table>
+
+
+<br />
+    Страница @(Model.PageCount < Model.PageNumber ? 0 : Model.PageNumber) из @Model.PageCount
+
+    @Html.PagedListPager(Model, page => Url.Action("Index",
+        new { page, sortOrder = ViewBag.CurrentSort, currentFilter = ViewBag.CurrentFilter }))
